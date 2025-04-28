@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import CryptoJS from "crypto-js";
 
 function Login() {
   const apiUrl = `${import.meta.env.VITE_API_URL}/Colaboradores/login`;
@@ -8,10 +9,15 @@ function Login() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // Clave secreta para la encriptación desde las variables de entorno
+  const secretKey = import.meta.env.VITE_SECRET_KEY;
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
+    
+
       const response = await axios.post(apiUrl, {
         username,
         password,
@@ -20,10 +26,20 @@ function Login() {
       // Extraer datos de la respuesta
       const { token, userType, roles } = response.data;
 
-      // Guardar los datos en localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("userType", userType);
-      localStorage.setItem("roles", JSON.stringify(roles));
+    // Encriptar los datos
+    const encryptedToken = CryptoJS.AES.encrypt(token, secretKey).toString();
+    const encryptedUserType = CryptoJS.AES.encrypt(userType, secretKey).toString();
+    const encryptedRoles = CryptoJS.AES.encrypt(JSON.stringify(roles), secretKey).toString();
+
+    // Usar claves menos descriptivas directamente
+    const tokenKey = "lkijdn";
+    const userTypeKey = "mnoqrs";
+    const rolesKey = "tuvwxy";
+
+    // Guardar los datos encriptados en localStorage
+    localStorage.setItem(tokenKey, encryptedToken);
+    localStorage.setItem(userTypeKey, encryptedUserType);
+    localStorage.setItem(rolesKey, encryptedRoles);
 
       // Navegar a la página principal
       navigate("/home");
